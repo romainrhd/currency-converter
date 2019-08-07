@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
+import Select from 'react-select';
 
 export class CurrencyConverter extends Component {
     constructor(props) {
@@ -19,13 +20,13 @@ export class CurrencyConverter extends Component {
         let symbols = {};
         await axios.get('http://data.fixer.io/api/symbols?access_key=e98157bae73034f3a4cb73185d5eee6a')
             .then(res => {
-                symbols = res.data.symbols;
+                symbols = Object.entries(res.data.symbols).map(([keySymbol, symbol]) => {
+                    return {
+                        value: keySymbol,
+                        label: symbol
+                    };
+                });
                 this.setState({symbols})
-            });
-        axios.get(`http://data.fixer.io/api/latest?access_key=e98157bae73034f3a4cb73185d5eee6a&base=EUR&symbols=${Object.keys(symbols)[0]}`)
-            .then(res => {
-                const rate = res.data.rates;
-                this.setState({currentSymbol: Object.keys(rate)[0], currentRate: rate[Object.keys(rate)]});
             });
     }
 
@@ -42,11 +43,11 @@ export class CurrencyConverter extends Component {
     async handleChangeSymbol(event) {
         const { amount } = this.state;
         let rate = 0;
-        const newSymbols = event.target.value;
+        const newSymbols = event;
         if (newSymbols){
-            await axios.get(`http://data.fixer.io/api/latest?access_key=e98157bae73034f3a4cb73185d5eee6a&base=EUR&symbols=${newSymbols}`)
+            await axios.get(`http://data.fixer.io/api/latest?access_key=e98157bae73034f3a4cb73185d5eee6a&base=EUR&symbols=${newSymbols.value}`)
                 .then(res => {
-                    rate = res.data.rates[newSymbols];
+                    rate = res.data.rates[newSymbols.value];
                 });
             this.setState({currentSymbol: newSymbols, amountConverted: amount * rate, currentRate: rate});
         }
@@ -57,11 +58,12 @@ export class CurrencyConverter extends Component {
         return (
             <React.Fragment>
                 <input type="number" value={amount} onChange={this.handleChangeAmount} disabled={!currentSymbol}/> EUR
-                <select value={currentSymbol} onChange={this.handleChangeSymbol} id="currentSymbol">
-                    <option value="0" disabled selected>Choisissez une monnaie</option>
-                    { Object.entries(symbols).map(([keySymbol, symbol]) => <option key={keySymbol} value={keySymbol}>{symbol}</option>) }
-                </select>
-                <p>Nouveau montant: {amountConverted} {currentSymbol}</p>
+                <Select
+                    value={currentSymbol}
+                    onChange={this.handleChangeSymbol}
+                    options={symbols}
+                />
+                <p>Nouveau montant: {amountConverted} {currentSymbol ? currentSymbol.value : ''}</p>
             </React.Fragment>
         );
     }
