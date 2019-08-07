@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import axios from "axios";
 import Select from 'react-select';
+import {AppBar, Box, Container, TextField, Toolbar, Typography} from "@material-ui/core";
+import "./CurrencyConverter.scss";
 
 export class CurrencyConverter extends Component {
     constructor(props) {
@@ -57,13 +59,36 @@ export class CurrencyConverter extends Component {
         const { amount, amountConverted, currentSymbol, symbols } = this.state;
         return (
             <React.Fragment>
-                <input type="number" value={amount} onChange={this.handleChangeAmount} disabled={!currentSymbol}/> EUR
-                <Select
-                    value={currentSymbol}
-                    onChange={this.handleChangeSymbol}
-                    options={symbols}
-                />
-                <p>Nouveau montant: {amountConverted} {currentSymbol ? currentSymbol.value : ''}</p>
+            <AppBar position="static" color="primary">
+                <Toolbar>
+                    <Typography variant="h6" color="inherit">
+                        Convertisseur de monnaie
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+            <Box display="flex" alignItems="center" height="100vh">
+                <Container maxWidth="sm" className="container">
+                    <TextField
+                        disabled={!currentSymbol}
+                        label="Montant en euros"
+                        margin="normal"
+                        onChange={this.handleChangeAmount}
+                        type="number"
+                        value={amount}
+                        fullWidth="100%"
+                    />
+                    <Select
+                        autoFocus
+                        onChange={this.handleChangeSymbol}
+                        options={symbols}
+                        placeholder="Choisissez votre devise"
+                        value={currentSymbol}
+                    />
+                    <p>
+                        Nouveau montant: {amountConverted} {currentSymbol ? currentSymbol.value : ''}
+                    </p>
+                </Container>
+            </Box>
             </React.Fragment>
         );
     }
